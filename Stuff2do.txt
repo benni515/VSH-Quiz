@@ -1,0 +1,5 @@
+* Clean upp Kóðann Gera hann flottan
+* Ef þú velur geturu og bakkar savera það samt
+* Gera taka test aftur, þegar þú finishar examið
+* Savea Scorið sem cookies, manneskja getur nefnt með
+* Gera þetta Object literall //Mjög flot inná javascriptisexy.com Quizið þeirra
