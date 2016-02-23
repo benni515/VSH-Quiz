@@ -58,7 +58,6 @@ h1 {
 }
 .Box {
 	width: 700px;
-	height: 400px;
 	margin: 0 auto;
 	background-color: #5CAAD8;
 	border-radius: 5px;
@@ -95,4 +94,20 @@ h1 {
 .button:hover {
 	cursor: pointer;
 	background-color: #6c7adb;
+}
+.thescore {
+	text-align: center;
+	margin-top: 50px;
+	margin-bottom: 20px;
+	font-size: 38px;
+	color: #AA3939;
+}
+.Highscore {
+	bottom: 0;
+	background-color: #AA3939;
+	padding: 20px;
+	margin-bottom: 20px;
+}
+.Highscore:hover {
+	background-color: #cb6464;
 }

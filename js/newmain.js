@@ -1,5 +1,51 @@
 // Ég veit að þetta er hardkóðað, en Þetta er bara gert útaf það er ekki tilbúið form til að búa til
 
+/*
+
+1. Array af objectum fyrir spurningar
+	Tjékk
+
+2. 2% Láttu spurningar birtast handahófskennt í vefappinu.
+	Tjékk
+3. 5% Nota dom
+	Tjékk
+
+4. 2% Notandi á að geta notað mús og lyklaborð til að velja svarmöguleika og fara þannig á milli
+spurninga (Events).
+	Ekki Tjékk
+
+5. 2% Notandi á að sjá hvort að valinn svarmöguleiki var réttur eða rangur (validation). Notaðu
+JavaScript eða jQuery animation og effects.
+	Ekki Tjékk
+
+6. 3% Eftir síðustu spurningu þá á notandu að sjá lokaskor (rétt / fj.spurninga). Hún á aðeins að sýna
+lokaskor, ekki spurningar og svarmöguleika. Bættu við hnapp svo hægt sé að byrja aftur á byrjun í
+vefappinu.
+	Ekki Tjékk
+
+7. 5% Hugaðu að viðmóti og útliti á vefappi t.d. með jQuery UI componentum eða JS library. Gerðu
+vefappið viðmótsvænt.
+	Fokking dreptu mig
+
+8. 4% Uppsetning og frágangur. Kóði á að vera vel uppsettur (skrár eru aðskildar) og commentaður.
+JavaScript kóði á að vera skýr (declarative), þ.e. notuð eru lítil og fleiri föll fremur en fá og stór.
+Notað er IIFE til að keyra Quiz. Ekki er vera að nota harðkóðaðar lausnir. 
+	Mehh hann dæmir, ekkert hardkóðað
+ AUKA
+	• Láttu svarmöguleikar birtast handahófskennt með spurningu
+		Willdo
+	• Web storage API til að vista score notanda í vaframinnið.
+		Tjékk
+	• Bættu við niðurteljara ásamt refsingu.
+		Willdo
+	• Back takki til að breyta val á svarmöguleika
+	• Swipe til að sleppa spurningu
+	• object literal structure fyrir kóðauppsetningu
+ TODO
+ 	* Make the Createq shorter with the CreateTag function
+
+*/
+
 // Object contructor
 function q_con(question, awnsers, rightawnser,theanwser) {
 	this.q = question;
@@ -19,10 +65,10 @@ allq = [q1,q2,q3,q4,q5,q6];
 
 //Harkóðað hérna líka því við erum basically enþá að prufa keyra
 UserDetails = ["Bernhard Linn Hilmarsson", "Bennilinn@live.com"]
-start(allq,UserDetails);
+start(allq,UserDetails,"Test Essay");
 
 //A function that takes in the questins and user details and runs the whole app
-function start(allq,UserDetails) {
+function start(allq,UserDetails,essayname) {
 	//This is the Constructor for the user
 	function User(Name , Email) {
 		this.name = Name;
@@ -35,8 +81,50 @@ function start(allq,UserDetails) {
 	User.prototype = {
 		constuctor : User,
 		//This function is called at the end of the exam to Save the score as cookies
-		SaveScore : function(Score, name, email) {
-
+		SaveScore : function(Score, name, email,essay) {
+			var name = essay;
+			var num = 1;
+			while(true) {
+				if (getCookie(essay+num)) {
+					num += 1;
+				} else {
+					break;
+				}
+			}
+			name += num;
+			var Value = name + ":" + Score;
+			setCookie(name,Value,365);
+			this.GetScores(essay);
+		},
+		GetScores : function(essay) {
+			var scores = [];
+			var name = essay;
+			var num = 1;
+			while(true) {
+				if (getCookie(essay+num)) {
+					scores.push(getCookie(essay+num));
+					num += 1;
+				} else {
+					break;
+				}
+			}
+			this.FindHighScore(scores);
+		},
+		FindHighScore : function(scores) {
+			var numbers = [];
+			for (var i = 0; i < scores.length; i++) {
+				var thestuff = scores[i].split(":");
+				numbers.push(thestuff[1]);
+			}
+			numbers.sort();
+			this.PostHighScores(numbers);
+		},
+		PostHighScores : function(scores) {
+			for (var i = scores.length; i > scores.length - 6; i--) {
+				if (scores[i]) {
+					CreateTag("div",ThisUser.name + " Got " + scores[i],"Box","Highscore");
+				}
+			}
 		},
 		//This adds the user awnser to his awnsers
 		AddAwnser : function(number,awnser) {
@@ -51,18 +139,11 @@ function start(allq,UserDetails) {
 				if (ThisUser.status == ThisUser.awnsersarray.length-2) {
 					document.getElementById("buttonn").innerHTML = "Finish exam";
 				}
-				//If he has awnserd the last question then the program is over
-				if (ThisUser.status == ThisUser.awnsersarray.length-1) {
-					this.ClearAll();
-					this.ShowScore(ThisUser.name, ThisUser.awnsersarray);
+				ThisUser.status += 1;
+				if (ThisUser.start == ThisUser.awnsersarray.length-1) {
+					ThisUser.start = 0;
 				} else {
-					ThisUser.status += 1;
-					if (ThisUser.start == ThisUser.awnsersarray.length-1) {
-						ThisUser.start = 0;
-					} else {
-						ThisUser.start += 1;
-					}
-					//Here he will call the function to really create the new awnsers
+					ThisUser.start += 1;
 				}
 			} else { //If they are going Backwards
 				//If it was the last question he will change it so it says next Question instead
@@ -77,15 +158,14 @@ function start(allq,UserDetails) {
 			}
 			this.Clearq();
 			this.Createq(allq);
-		},
-		ClearAll : function() {
-			var div = document.getElementById("Box");
-			while(div.firstChild){
-		    	div.removeChild(div.firstChild);
+			//If he has awnserd the last question then the program is over
+			if (ThisUser.status == ThisUser.awnsersarray.length && Type == "Forward") {
+				this.ClearAll();
+				this.CalculateScore(ThisUser.name, ThisUser.awnsersarray);
 			}
 		},
 		//This function is called if hes finishing the test
-		ShowScore : function(Name,Awnsers) {
+		CalculateScore : function(Name,Awnsers) {
 			//Caluclates the right awners and prints them out with the name and score
 			var score = 0;
 			for (var i = 0; i < Awnsers.length; i++) {
@@ -95,17 +175,37 @@ function start(allq,UserDetails) {
 					}
 				}
 			}
-			alert(score);
+			this.ShowScore(score);
+		},
+		ShowScore : function(score) {
+			//Made a function that lets the code get shorter with a CreateTag function
+			var restartclick = function() {
+				alert("gona restart the game")
+			};
+			var menuclick = function() {
+				alert("Going to the menu");
+			};
+			CreateTag("h1",ThisUser.name,"Box");
+			CreateTag("h2",score + " out of " + ThisUser.awnsersarray.length + " are right","Box","thescore");
+			this.SaveScore(score, ThisUser.name, ThisUser.email, essayname);
+			CreateTag("div","Restart Game","Box","button", null, restartclick);
+			CreateTag("div","Main Page","Box","button",null,menuclick);
 		},
 		RestartGame : function() {
 			Start();
+		},
+		ClearAll : function() {
+			var div = document.getElementById("Box");
+			while(div.firstChild){
+		    	div.removeChild(div.firstChild);
+			}
 		},
 		Clearq : function() {
 			var div = document.getElementById("rads");
 			while(div.firstChild){
 		    	div.removeChild(div.firstChild);
 			}
-		},//Asfsakið að þetta sjé svona stórt function bara væri heimskulegt að splitta henni upp því dom vinsla eru margar línur bara
+		},//Have to make this Create q, a bit shorter with my Create Tag
 		Createq : function() {
 			document.getElementById("q").innerHTML = allq[ThisUser.start].q;
 			for (var i = 0; i < allq[ThisUser.start].a.length; i++) {
